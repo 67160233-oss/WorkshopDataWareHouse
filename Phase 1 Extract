@@ -1,9 +1,0 @@
-import pandas as pd
-import sqlite3
-
-# โหลดข้อมูลดิบ
-df_raw = pd.read_csv('raw_ecommerce_data.csv')
-
-# ตรวจสอบโครงสร้างและค่า Null
-df_raw.info()  # เช็ค Data Types และ Missing Values ก่อนเสมอ
-df_raw.head()
