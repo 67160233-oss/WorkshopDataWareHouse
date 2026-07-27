@@ -1,0 +1,38 @@
+# สร้าง dim_customer พร้อมลบแถวที่มีค่าว่าง (Missing Value) ออกก่อน
+dim_customer = (
+    df_raw[['Customer_Name', 'Email']]
+    .dropna(subset=['Customer_Name', 'Email'])  # ลบแถวที่มีค่า NULL ในคอลัมน์เหล่านี้
+    .drop_duplicates()
+)
+
+# สร้าง Surrogate Key (customer_id)
+dim_customer = dim_customer.reset_index(drop=True)
+dim_customer['customer_id'] = dim_customer.index + 1
+
+# จัดเรียงคอลัมน์ให้ PK อยู่หน้าสุด
+dim_customer = dim_customer[['customer_id', 'Customer_Name', 'Email']]
+
+# สร้าง dim_product
+dim_product = df_raw[['Product', 'Category']].drop_duplicates().reset_index(drop=True)
+
+# สร้าง Surrogate Key (product_id)
+dim_product['product_id'] = dim_product.index + 1
+
+# จัดเรียงคอลัมน์ให้ PK อยู่หน้าสุด
+dim_product = dim_product[['product_id', 'Product', 'Category']]
+
+# แปลงคอลัมน์วันที่เป็น datetime และดึงวันที่ไม่ซ้ำกัน
+dates = pd.to_datetime(df_raw['Order_Date'], format='mixed', errors='coerce').dropna().unique()
+
+dim_date = pd.DataFrame({'full_date': dates}).sort_values('full_date').reset_index(drop=True)
+
+# สร้าง date_id (เช่น 20260424) และแตกรายละเอียดวัน/เดือน/ปี
+dim_date['date_id'] = dim_date['full_date'].dt.strftime('%Y%m%d').astype(int)
+dim_date['day'] = dim_date['full_date'].dt.day
+dim_date['month'] = dim_date['full_date'].dt.month
+dim_date['month_name'] = dim_date['full_date'].dt.month_name()
+dim_date['quarter'] = 'Q' + dim_date['full_date'].dt.quarter.astype(str)
+dim_date['year'] = dim_date['full_date'].dt.year
+
+# จัดเรียงคอลัมน์
+dim_date = dim_date[['date_id', 'full_date', 'day', 'month', 'month_name', 'quarter', 'year']]
