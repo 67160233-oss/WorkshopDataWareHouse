@@ -1,0 +1,17 @@
+query = """
+SELECT
+    c.Customer_Name,
+    SUM(f.Amount) as Total_Spend
+FROM fact_sales f
+JOIN dim_customer c ON f.customer_id = c.customer_id
+GROUP BY c.Customer_Name
+ORDER BY Total_Spend DESC
+LIMIT 3;
+"""
+
+# เชื่อมต่อฐานข้อมูลและดึงผลลัพธ์ออกมาเป็น DataFrame
+with sqlite3.connect('warehouse.db') as conn:
+    df_top_customers = pd.read_sql_query(query, conn)
+
+print("Top 3 Customers by Total Spend:")
+print(df_top_customers)
